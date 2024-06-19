@@ -1,3 +1,25 @@
+# 动态大小的text field
+
+灵感来自 https://www.youtube.com/watch?v=rmCvCic6Kv8
+
+我在它的基础上增加了横向宽度的动态变化。
+
+## 思路解释：
+动态大小的text field需要依赖UIKit中的UITextView来实现，因为SwiftUI原生的TextField以及TextEditor都无法很好地实现这一想法。
+
+然后是利用UITextView的代理来监听文字输入，在textViewDidChange事件中获取正确的TextView大小，然后通过SwiftUI的Environment将数据传递出去。
+
+值得注意的是，原视频中是使用UITextView的contentSize来获取实际高度，这是因为UITextView继承自UIScrollView，所以当它的文本超过其高度时，它会自动换行，使得ContentSize变化。
+
+但是对于宽度的获取就没有这么容易，由于UITextView的宽度不会随输入的变化而变化，所以通过contentSize获取宽度是不可行的。最终让我找到UIView上sizeThatFits这个方法，这个方法可以根据传入的尺寸限制来计算view实际需要的尺寸，通过这个方法就可以获得较为正确的宽高。
+
+然后将宽高通过environment传递回上层，最终通过swiftUI的frame装饰器来设置TextField的宽高。
+
+这里还有一个问题，我一开始尝试使用Binding来传递数据，发现在首次渲染的时候，Binding的值没有被正确修改，最后不得已只能采用Environment来传递数据。
+
+## 代码解释
+
+``` swift
 
 import SwiftUI
 // 容器View，后续需要封装成可用的容器
@@ -82,3 +104,7 @@ class TextViewSize {
 #Preview {
     ContentView()
 }
+
+```
+
+代码本身还算是简单，关键在于思考过程。
